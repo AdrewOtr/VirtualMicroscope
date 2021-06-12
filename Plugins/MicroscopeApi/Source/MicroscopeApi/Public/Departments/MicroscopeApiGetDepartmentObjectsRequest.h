@@ -2,10 +2,10 @@
 #include "MicroscopeApiRequest.h"
 #include "MicroscopeObject.h"
 
-#include "MicroscopeApiGetObjectsRequest.generated.h"
+#include "MicroscopeApiGetDepartmentObjectsRequest.generated.h"
 
 UCLASS()
-class MICROSCOPEAPI_API UMicroscopeGetObjectsRequest final : public UMicroscopeApiRequest {
+class MICROSCOPEAPI_API UMicroscopeGetDepartmentObjectsRequest final : public UMicroscopeApiRequest {
     GENERATED_BODY()
 
 protected:
@@ -15,7 +15,7 @@ protected:
 public:
     /** Request object Id. */
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    FString Id = TEXT("");
+    FString Id;
 
     /** Request result. */
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)

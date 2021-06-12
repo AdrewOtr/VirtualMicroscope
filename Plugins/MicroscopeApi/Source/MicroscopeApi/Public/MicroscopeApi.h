@@ -21,6 +21,7 @@ namespace Api {
     static const FString _ = TEXT("/");
 
     static const FString Objects = TEXT("objects");
+    static const FString Departments = TEXT("departments");
 #pragma endregion
 
     const FString RootUrl = TEXT("http://127.0.0.1:8000"); // Local debug API.
@@ -28,12 +29,36 @@ namespace Api {
 #pragma region Objects
     const FString ObjectsUrl = RootUrl + _ + Objects;
 
-    inline FString MakeObjectsIndexUrl(const int32 Offset = 0, const int32 Limit = 10, const FString& Query = "") {
-        return ObjectsUrl + FString::Printf(TEXT("?offset=%d&limit=%d&query=%s"), Offset, Limit, *Query);
+    inline FString MakeGetObjectsUrl() {
+        return ObjectsUrl;
     }
 
-    inline FString MakeObjectUrl(const FString Id) {
+    inline FString MakeGetObjectUrl(const FString Id) {
         return ObjectsUrl + _ + Id;
+    }
+#pragma endregion
+
+#pragma region Departments
+    const FString DepartmentsUrl = RootUrl + _ + Departments;
+
+    inline FString MakeGetDepartmentsUrl() {
+        return DepartmentsUrl;
+    }
+
+    inline FString MakeGetDepartmentUrl(const FString Id) {
+        return DepartmentsUrl + _ + Id;
+    }
+
+    inline FString MakeGetDepartmentObjectsUrl(const FString Id) {
+        return DepartmentsUrl + _ + Id + _ + Objects;
+    }
+
+    inline FString MakePostDepartmentUrl(const FString Title) {
+        return ObjectsUrl + _ + Title;
+    }
+
+    inline FString MakePostObjectUrl(const FString DepartmentId) {
+        return ObjectsUrl + _ + DepartmentId;
     }
 #pragma endregion
 

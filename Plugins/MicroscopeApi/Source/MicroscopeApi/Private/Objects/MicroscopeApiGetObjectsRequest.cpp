@@ -1,4 +1,4 @@
-﻿#include "MicroscopeApiGetObjectsRequest.h"
+﻿#include "Objects/MicroscopeApiGetObjectsRequest.h"
 
 #include "MicroscopeApi.h"
 #include "Interfaces/IHttpResponse.h"
@@ -7,7 +7,7 @@
 
 void UMicroscopeGetObjectsRequest::ProcessRequest() {
     HttpRequest->SetVerb(Api::HttpMethods::Get);
-    HttpRequest->SetURL(Api::MakeObjectUrl(Id));
+    HttpRequest->SetURL(Api::MakeGetObjectsUrl());
 
     Super::ProcessRequest();
 }
