@@ -6,9 +6,19 @@
 #include "Departments/MicroscopeApiGetDepartmentsRequest.h"
 #include "Departments/MicroscopeApiPostDepartmentRequest.h"
 #include "Objects/MicroscopeApiDeleteObjectRequest.h"
+#include "Objects/MicroscopeApiGetObjectFilesRequest.h"
 #include "Objects/MicroscopeApiGetObjectRequest.h"
 #include "Objects/MicroscopeApiGetObjectsRequest.h"
 #include "Objects/MicroscopeApiPostObjectRequest.h"
+
+#include "HttpModule.h"
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "Engine/Texture2DDynamic.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DateTime.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 
 void UMicroscopeApiService::OnApiRequestComplete(UMicroscopeApiRequest* Request, bool bWasSuccessful) {
@@ -25,6 +35,56 @@ void UMicroscopeApiService::OnApiRequestComplete(UMicroscopeApiRequest* Request,
 }
 
 #pragma region Objects
+
+void UMicroscopeApiService::DownloadTexture(const FString Url) {
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));;
+    TSharedPtr<IImageWrapper> ImageWrappers[3] =
+    {
+        ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG),
+        ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG)
+    };
+
+    TArray64<uint8>* RawData = new TArray64<uint8>();
+    FString FileName;
+    FString FileExt;
+    FString Part;
+    FPaths::Split(Url, Part, FileName, FileExt);
+
+    FString FilePathG = FPaths::ProjectDir() + TEXT("cache/") + FileName;
+
+    // Try to load file from the cache.
+    TArray<uint8>* LoadedData = new TArray<uint8>;
+    if (FFileHelper::LoadFileToArray(*LoadedData, *FilePathG)) {
+        // Find a matching image wrapper for the image data.
+        for (auto ImageWrapper : ImageWrappers) {
+            if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(LoadedData->GetData(), LoadedData->Num())) {
+                if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, *RawData)) {
+                    const auto Width = ImageWrapper->GetWidth();
+                    const auto Height = ImageWrapper->GetHeight();
+                    Texture = UTexture2D::CreateTransient(Width, Height);
+                    // Copy raw bytes to the texture.
+                    if (Texture) {
+
+                        Texture->CompressionSettings = TC_Default;
+                        Texture->SRGB = true;
+
+                        const auto TextureData = Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+                        FMemory::Memcpy(TextureData, RawData->GetData(), RawData->Num());
+                        Texture->PlatformData->Mips[0].BulkData.Unlock();
+
+                        // Free memory used for temporary storage.
+                        delete RawData;
+                        Texture->UpdateResource();
+
+                        OnCompleteTexture.Broadcast(Url, Texture);
+                        UE_LOG(LogTemp, Log, TEXT("Loaded cache"));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
 
 void UMicroscopeApiService::GetObject(const FString Id, const FMicroscopeApiCallDelegate& Callback) {
 	UMicroscopeGetObjectRequest* Request = NewObject<UMicroscopeGetObjectRequest>(this);
@@ -46,6 +106,28 @@ FMicroscopeObject UMicroscopeApiService::GetObjectResponse(UMicroscopeApiRequest
 		return FMicroscopeObject();
 	}
 	return CastedObject->Object;
+}
+
+void UMicroscopeApiService::GetObjectFiles(const FString Id, const FMicroscopeApiCallDelegate& Callback) {
+	UMicroscopeGetObjectFilesRequest* Request = NewObject<UMicroscopeGetObjectFilesRequest>(this);
+	Request->Id = Id;
+
+	FMicroscopeApiResponse Response;
+	Response.Request = Request;
+	Response.Callback = Callback;
+	Response.CompleteDelegateHandle = Request->OnCppRequestComplete.AddUObject(this, &UMicroscopeApiService::OnApiRequestComplete);
+
+	RequestMap.Add(Request, Response);
+
+	Request->Execute();
+}
+
+TArray<FMicroscopeFile> UMicroscopeApiService::GetObjectFilesResponse(UMicroscopeApiRequest* RequestObject) {
+	const auto CastedObject = Cast<UMicroscopeGetObjectFilesRequest>(RequestObject);
+	if(!CastedObject) {
+		return TArray<FMicroscopeFile>();
+	}
+	return CastedObject->Files;
 }
 
 void UMicroscopeApiService::GetObjects(const FMicroscopeApiCallDelegate& Callback) {

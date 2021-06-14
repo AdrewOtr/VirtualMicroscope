@@ -22,6 +22,7 @@ namespace Api {
 
     static const FString Objects = TEXT("objects");
     static const FString Departments = TEXT("departments");
+    static const FString Files = TEXT("files");
 #pragma endregion
 
     const FString RootUrl = TEXT("http://127.0.0.1:8000"); // Local debug API.
@@ -35,6 +36,10 @@ namespace Api {
 
     inline FString MakeGetObjectUrl(const FString Id) {
         return ObjectsUrl + _ + Id;
+    }
+
+    inline FString MakeGetObjectFilesUrl(const FString Id) {
+        return ObjectsUrl + _ + Id + _ + Files;
     }
 #pragma endregion
 
@@ -88,7 +93,9 @@ namespace Api {
     }
 
     namespace Fields {
-        const auto Payload = TEXT("data");
+        // const auto Payload = TEXT("data");
+        const auto Departments = TEXT("departments");
+        const auto Objects = TEXT("objects");
         const auto Id = TEXT("id");
         const auto Type = TEXT("type");
         const auto Url = TEXT("url");

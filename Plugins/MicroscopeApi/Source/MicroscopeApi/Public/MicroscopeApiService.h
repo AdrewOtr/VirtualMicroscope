@@ -8,6 +8,7 @@
 
 #include "MicroscopeApiService.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTextureAsyncDelegates, FString, Url, UTexture2D*, Texture);
 
 UCLASS()
 class MICROSCOPEAPI_API UMicroscopeApiService final : public UGameInstanceSubsystem {
@@ -21,12 +22,24 @@ public:
 	UPROPERTY()
 	TMap<class UMicroscopeApiRequest*, FMicroscopeApiResponse> RequestMap;
 
+	void DownloadTexture(const FString Url);
+
+	FTextureAsyncDelegates OnCompleteTexture;
+	
+	UTexture2D* Texture = nullptr;
+
 #pragma region Objects
 	UFUNCTION(BlueprintCallable)
 	void GetObject(const FString Id, const FMicroscopeApiCallDelegate& Callback);
 
 	UFUNCTION(BlueprintCallable)
 	FMicroscopeObject GetObjectResponse(UMicroscopeApiRequest* RequestObject);
+
+	UFUNCTION(BlueprintCallable)
+	void GetObjectFiles(const FString Id, const FMicroscopeApiCallDelegate& Callback);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FMicroscopeFile> GetObjectFilesResponse(UMicroscopeApiRequest* RequestObject);
 
 	UFUNCTION(BlueprintCallable)
 	void GetObjects(const FMicroscopeApiCallDelegate& Callback);
