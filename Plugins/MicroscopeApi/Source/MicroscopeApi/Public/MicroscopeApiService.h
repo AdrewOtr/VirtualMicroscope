@@ -22,10 +22,13 @@ public:
 	UPROPERTY()
 	TMap<class UMicroscopeApiRequest*, FMicroscopeApiResponse> RequestMap;
 
+	UFUNCTION(BlueprintCallable)
 	void DownloadTexture(const FString Url);
 
+	UPROPERTY(BlueprintAssignable)
 	FTextureAsyncDelegates OnCompleteTexture;
-	
+
+	UPROPERTY()
 	UTexture2D* Texture = nullptr;
 
 #pragma region Objects

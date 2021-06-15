@@ -45,12 +45,8 @@ void UMicroscopeApiService::DownloadTexture(const FString Url) {
     };
 
     TArray64<uint8>* RawData = new TArray64<uint8>();
-    FString FileName;
-    FString FileExt;
-    FString Part;
-    FPaths::Split(Url, Part, FileName, FileExt);
 
-    FString FilePathG = FPaths::ProjectDir() + TEXT("cache/") + FileName;
+    const FString FilePathG = FPaths::ProjectDir() + TEXT("cache/") + Url;
 
     // Try to load file from the cache.
     TArray<uint8>* LoadedData = new TArray<uint8>;
