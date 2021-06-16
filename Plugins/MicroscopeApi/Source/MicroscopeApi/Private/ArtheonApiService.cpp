@@ -82,6 +82,14 @@ void UMicroscopeApiService::DownloadTexture(const FString Url) {
     }
 }
 
+TArray<FString> UMicroscopeApiService::FindFiles(const FString Directory) {
+	IFileManager& FileManager = IFileManager::Get();
+
+	TArray<FString> Files;
+	FileManager.FindFiles(Files, *Directory);
+	return Files;
+}
+
 void UMicroscopeApiService::GetObject(const FString Id, const FMicroscopeApiCallDelegate& Callback) {
 	UMicroscopeGetObjectRequest* Request = NewObject<UMicroscopeGetObjectRequest>(this);
 	Request->Id = Id;

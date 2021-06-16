@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DownloadTexture(const FString Url);
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FString> FindFiles(const FString Directory);
+
 	UPROPERTY(BlueprintAssignable)
 	FTextureAsyncDelegates OnCompleteTexture;
 
